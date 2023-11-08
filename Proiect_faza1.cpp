@@ -33,9 +33,50 @@ public:
             this->numeEleviEx[i] = numeEleviEx[i];
         }
     }
+    Liceu(const Liceu& obiect2) :id(id) {
+        this->nrProfesori = obiect2.nrProfesori;
+        this->nrEleviEx = obiect2.nrEleviEx;
+        this->numeEleviEx = new string[obiect2.nrEleviEx];
+        for (int i = 0; i < obiect2.nrEleviEx; i++) {
+            this->numeEleviEx[i] = obiect2.numeEleviEx[i];
+        }
+
+    }
     ~Liceu() {
         if (this->numeEleviEx != NULL)
             delete[]this->numeEleviEx;
+    }
+    Liceu operator=(const Liceu& obiect2) {
+        if (this != &obiect2) {
+            this->nrProfesori = obiect2.nrProfesori;
+            this->nrEleviEx = obiect2.nrEleviEx;
+            if (this->numeEleviEx != NULL) {
+                delete[]this->numeEleviEx;
+            }
+            this->numeEleviEx = new string[obiect2.nrEleviEx];
+            for (int i = 0; i < obiect2.nrEleviEx; i++) {
+                this->numeEleviEx[i] = obiect2.numeEleviEx[i];
+            }
+        }
+        return *this;
+    }
+    Liceu operator+=(const Liceu& obiect2) {
+        this->nrProfesori += obiect2.nrProfesori;
+        int aux = this->nrEleviEx;
+        this->nrEleviEx += obiect2.nrEleviEx;
+        string* vector = new string[this->nrEleviEx];
+        for (int i = 0; i < aux; i++) {
+            vector[i] = this->numeEleviEx[i];
+        }
+        for (int i = aux; i < this->nrEleviEx; i++)
+        {
+            vector[i] = obiect2.numeEleviEx[i - aux];
+        }
+        if (this->numeEleviEx != NULL) {
+            delete[]this->numeEleviEx;
+        }
+        this->numeEleviEx = vector;
+        return*this;
     }
     void afisareLiceu1() {
         cout << "Numarul profesorilor este de: " << nrProfesori << " si un numar de elevi exmatriculati cu numele: ";
@@ -54,10 +95,6 @@ public:
     }
     void afisareLiceu2() {
         cout << "Bugetul liceului este de: " << buget << ", iar numarul de clase este de: " << nrClase << endl;
-    }
-    Liceu(const Liceu& obiect1) :id(id) {
-        this->buget = obiect1.buget;
-        this->nrClase =obiect1.nrClase;
     }
     static string getAdresa() {
         return adresa;
@@ -143,7 +180,27 @@ public:
     }
     friend string getSirElevi(const Liceu& obiect2);
     friend int getElevi(const Liceu& obiect1);
+    friend int getElevi1(Liceu& obiect1);
+    friend ostream& operator<<(ostream& scoala, const Liceu& obiect3);
+    friend istream& operator>>(istream& colegiu, Liceu& obiect2) {
+        cout << "Introduceti numarul profesorilor: ";
+        colegiu >> obiect2.nrProfesori;
+        cout << "Numarul elevilor exmatriculati: ";
+        colegiu >> obiect2.nrEleviEx;
+        cout << "Numele elevilor ematriculati: ";
+        if (obiect2.numeEleviEx != NULL) {
+            delete[]obiect2.numeEleviEx;
+
+            obiect2.numeEleviEx = new string[obiect2.nrEleviEx];
+            for (int i = 0; i < obiect2.nrEleviEx; i++) {
+                colegiu >> obiect2.numeEleviEx[i];
+            }
+            return colegiu;
+        }
+    }
+    
 };
+
 string getSirElevi(const Liceu& obiect2) {
     	string aux = "";
     	for (int i = 0; i < obiect2.nrEleviEx; i++) {
@@ -154,10 +211,19 @@ string getSirElevi(const Liceu& obiect2) {
 int getElevi(const Liceu& obiect1) {
     return obiect1.nrElevi;
 }
+int getElevi1(Liceu& obiect1) {
+    obiect1.nrElevi=obiect1.nrElevi-20;
+    return obiect1.nrElevi;
+}
 int Liceu::anulAparitieiLiceului = 1960;
 int Liceu::mediaAdmitere = 9;
 string Liceu::adresa="Popescu";
 float Liceu::numar=3;
+
+ostream& operator<<(ostream& scoala, const Liceu& obiect3) {
+    scoala << "Liceul are un buget de:" << obiect3.buget << " si un numar de clase de: " << obiect3.nrClase;
+    return scoala;
+}
 
 class Materie {
 private:
@@ -177,17 +243,33 @@ public:
     }
     Materie() :idMan(1) {
         this->nume = "Matematica";
-        this->nrOre = 30;
+        this->nrOre = 40;
         this->notaMaximaObtinuta = 9.70;
     }
+
     void afisareMaterie() {
         cout << "Materia este: " << nume << ", si este sustinuta timp de: " << nrOre
             << " minute si nota maxima obtinuta a fost: " << notaMaximaObtinuta << "." << endl;
+    }
+    Materie operator+(int nrOre) const {
+        Materie aux = *this;
+        aux.nrOre = this->nrOre + nrOre;
+        return aux;
     }
     Materie(int notaMinimaObtinuta, int idMan) :idMan(idMan) {
         std::cout << "Nota minima obtinuta a fost: " << notaMinimaObtinuta << "." << std::endl;
     }
 
+     Materie operator++() {
+        this->nrOre++;
+        return *this;
+    }
+
+    Materie operator++(int) {
+        Materie initial = *this;
+        this->nrOre++;
+        return initial;
+    }
     Materie(int nrEleviPr, string numeE, int idMan, int nrProfesori, string* numeProfesori) :idMan(idMan) {
         this->nrProfesori = nrProfesori;
         this->numeProfesori = new string[nrProfesori];
@@ -198,6 +280,8 @@ public:
     }
 
     Materie(const Materie& obiect6) :idMan(idMan) {
+                this->notaMaximaObtinuta = obiect6.notaMaximaObtinuta;
+                this->nrOre = obiect6.nrOre;
         		this->nrProfesori = obiect6.nrProfesori;
         		this->numeProfesori = new string[obiect6.nrProfesori];
         		for (int i = 0; i < obiect6.nrProfesori; i++) {
@@ -209,6 +293,20 @@ public:
     ~Materie() {
         if (this->numeProfesori != NULL)
             delete[]this->numeProfesori;
+    }
+    Materie operator=(const Materie& obiect6) {
+        this->nrOre = obiect6.nrOre;
+        if (this != &obiect6) {
+            this->nrProfesori = obiect6.nrProfesori;
+            if (this->numeProfesori != NULL) {
+                delete[]this->numeProfesori;
+            }
+            this->numeProfesori = new string[obiect6.nrProfesori];
+            for (int i = 0; i < obiect6.nrProfesori; i++) {
+                this->numeProfesori[i] = obiect6.numeProfesori[i];
+            }
+        }
+        return *this;
     }
     void afisareMaterie1() {
         cout << "Numarul de profesori care predau aceasta materie este de " << nrProfesori << ", iar numele lor este ";
@@ -250,9 +348,23 @@ public:
             this->notaMaximaObtinuta = notaMaximaObtinuta;
         }
     }
+    bool operator>(Materie obiect10) {
+        return this->nrOre > obiect10.nrOre;
+    }
     friend int getNrOre(const Materie& obiect4);
     friend float getNotaMax(const Materie& obiect4);
+    friend  Materie operator+(int nrOre, const Materie& obiect4) {
+        Materie aux = obiect4;
+        aux.nrOre = obiect4.nrOre + nrOre;
+        return aux;
+    }
+    friend ostream& operator<<(ostream& ore, const Materie& obiect10);
+   
 };
+ostream& operator<<(ostream& ore, const Materie& obiect4) {
+    ore << "Materia se desfasoara intr-un numar de ore pe saptamana de:" << obiect4.nrOre;
+    return ore;
+}
 int getNrOre(const Materie& obiect4) {
     return obiect4.nrOre;
 }
@@ -263,14 +375,13 @@ int Materie::nrManuale = 1;
 string Materie::autorMan = "Dobrescu";
 string Materie::zilePractica = "Luni, Miercuri,Joi ";
 
-
 class Profesori {
 private:
     static float salariul;
     string nume;
     string manual;
     string materie;
-    long long int nrTel;
+    long long int nrTel; 
     int claseDirig;
     string* numeSef;
 public:
@@ -311,6 +422,23 @@ public:
             cout << "NA" << endl;
         }
     }
+    Profesori operator+=(const Profesori& obiect8) {
+        int aux = this->claseDirig;
+        this->claseDirig += obiect8.claseDirig;
+        string* vector = new string[this->claseDirig];
+        for (int i = 0; i < aux; i++) {
+            vector[i] = this->numeSef[i];
+        }
+        for (int i = aux; i < this->claseDirig; i++)
+        {
+            vector[i] = obiect8.numeSef[i - aux];
+        }
+        if (this->numeSef != NULL) {
+            delete[]this->numeSef;
+        }
+        this->numeSef = vector;
+        return*this;
+    }
     Profesori(const Profesori& obiect8) :nrIn(nrIn) {
         this->claseDirig = obiect8.claseDirig;
         this->numeSef = new string[obiect8.claseDirig];
@@ -318,6 +446,19 @@ public:
             this->numeSef[i] = obiect8.numeSef[i];
         }
 
+    }
+    Profesori operator=(const Profesori& obiect8) {
+        if (this != &obiect8) {
+            this->claseDirig = obiect8.claseDirig;
+            if (this->numeSef != NULL) {
+                delete[]this->numeSef;
+            }
+            this->numeSef = new string[obiect8.claseDirig];
+            for (int i = 0; i < obiect8.claseDirig; i++) {
+                this->numeSef[i] = obiect8.numeSef[i];
+            }
+        }
+        return *this;
     }
     Profesori(string materie, string manual, int nrIn) :nrIn(nrIn) {
         this->materie = materie;
@@ -380,6 +521,22 @@ public:
     }
     friend string getSirSefClasa(const Profesori& obiect8);
     friend string getMaterie(const Profesori& obiect9);
+    friend istream& operator>>(istream& prof, Profesori& obiect11) {
+        cout << "Introduceti numarul de clase: ";
+        prof >> obiect11.claseDirig;
+        if (obiect11.numeSef != NULL) {
+            delete[]obiect11.numeSef;
+
+            obiect11.numeSef = new string[obiect11.claseDirig];
+            for (int i = 0; i < obiect11.claseDirig; i++) {
+                prof >> obiect11.numeSef[i];
+            }
+            return prof;
+        }
+    }
+    bool operator!=(const Profesori& obiect8) {
+        return this->claseDirig != obiect8.claseDirig;
+    }
 };
 string getSirSefClasa(const Profesori& obiect8) {
     string aux = "";
@@ -407,6 +564,8 @@ void main() {
     obiect1.setNumar(3);
     cout << getElevi(obiect1);
     cout << endl;
+    cout << getElevi1(obiect1);
+    cout << endl;
     cout << "Anul aparitiei liceului este: " << Liceu::anulAparitieiLiceului << endl;
     cout << "Media de admitere este :" << Liceu::getmediaAdmitere() << endl;
     string* numeEleviEx = new string[3];
@@ -419,12 +578,20 @@ void main() {
     cout << endl;
     cout << getSirElevi(obiect2);
     cout << endl;
+    Liceu obiect12;
+    obiect12= obiect2;
+    obiect12.afisareLiceu1();
+    cout << endl;
+    obiect1+= obiect2;
+    obiect1.afisareLiceu1();
+    cout << endl;
     Liceu obiect3(100000, 20, 3);
     cout << obiect3.id << endl;
     obiect3.afisareLiceu2();
     Liceu L1(obiect3);
     obiect3.afisareLiceu2();
-
+    cout << obiect3 << endl;
+    cin >> obiect2;
 
     cout << "MATERIE" << endl;
     Materie obiect4;
@@ -448,9 +615,23 @@ void main() {
     cout << obiect6.idMan << endl;
     obiect6.afisareMaterie1();
     cout << endl;
+    Materie obiect13;
+    obiect13 = obiect6;
+    obiect13.afisareMaterie1();
+    cout << endl;
     Materie M1(obiect6);
     obiect6.afisareMaterie1();
     cout << endl;
+    Materie obiect10= obiect4+5;
+    cout << obiect10 << endl;
+    if (obiect10 > obiect4) {
+        cout << "Este mai mare" << endl;
+    } 
+    else
+        cout << "Este mai mic" << endl;
+    Materie obiect18= obiect4++;
+    obiect18 = ++obiect4;
+    cout << obiect18 << endl;
 
 
     cout << "PROFESORI" << endl;
@@ -472,9 +653,24 @@ void main() {
     cout << endl;
     cout << getSirSefClasa(obiect8);
     cout << endl;
+    Profesori obiect14;
+    obiect14 = obiect8;
+    obiect14.afisareProfesori1();
+    cout << endl;
+    Profesori obiect16;
+    obiect16 = obiect8;
+    obiect16.afisareProfesori1();
+    cout << endl;
     Profesori obiect9("romana", "ART.", 3);
     cout << obiect9.nrIn << endl;
     obiect9.afisareProfesori2();
     cout << endl;
-    cout << getMaterie(obiect9);
-};
+    cout << getMaterie(obiect9)<<endl;
+    Profesori obiect11;
+    cin >> obiect11;
+    if (obiect8 != obiect11) {
+        cout << "Clasele sunt diferite";
+    }
+    else
+        cout << "Nu sunt diferite";
+}
